@@ -28,7 +28,6 @@
         "targetPlatforms": [
             "aplite",
             "basalt",
-            "chalk",
             "diorite"
         ],
         "uuid": "3b5e3bf2-c1f3-4f9d-8a90-1013b5264c94",

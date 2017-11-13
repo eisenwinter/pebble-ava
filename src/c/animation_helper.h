@@ -27,6 +27,7 @@ typedef struct spriteAnimation {
    the whole thing would need a re-write =p
  */
 typedef struct entityPosition {
+     bool set;
      int x;
      int y;
 } EntityPosition;
@@ -37,7 +38,7 @@ typedef struct entityPosition {
  * @param animation the animation to be done
  * @param pos the position its walking towards to 
  */
-typedef void animationCallback(SpriteAnimation animation, EntityPosition pos, int speed);
+typedef void animationCallback(SpriteAnimation animation, EntityPosition pos, int rep, int fpsAdjust);
  
 /**
  * @brief spawns a creature on the visible fiel
@@ -69,18 +70,16 @@ typedef void animationCallback(SpriteAnimation animation, EntityPosition pos, in
  /**
   * @brief lets it yawn
   * 
-  * @param c creature
   * @param cb animation to be done
   */
- void creature_is_sleepy(Creature *c, animationCallback *cb);
+ void creature_is_sleepy(animationCallback *cb);
 
 /**
  * @brief hush hush sleepyboi
  * 
- * @param c creature thats falling asleep
  * @param cb animation procesor
  */
- void creature_falling_alseep(Creature *c, animationCallback *cb);
+ void creature_falling_alseep(animationCallback *cb);
 
  /**
   * @brief running arrround playing

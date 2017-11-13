@@ -116,7 +116,7 @@ bool play(Creature *c){
 }
  
 bool put_to_sleep(Creature *c){
-	if((!c->asleep) && (c->rested < DEFAULT_STAT*0.3)){
+	if((!c->asleep) && (c->rested < DEFAULT_STAT*0.41)){
 		c->asleep = true;
 		return true;
 	}
@@ -125,7 +125,7 @@ bool put_to_sleep(Creature *c){
 }
 
 bool is_alive(Creature *c){
-	return c->health >= DEFAULT_STAT*0.33; //3 main stats = 33%
+	return c->health >= DEFAULT_STAT*0.12; //3 main stats = 33%
 }
 
 bool is_asleep(Creature *c){

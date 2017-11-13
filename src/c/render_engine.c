@@ -13,17 +13,16 @@
  */
 
 //how many animations we can be behind while rendering
-#define MAX_ANIMATION_STACK 256
+#define MAX_ANIMATION_QUEUE 32
 //fps for delta frame time
-#define FPS 24
+#define DEFAULT_FPS 3
 
-typedef struct animationStackItem {
+typedef struct animationQueueItem {
     SpriteAnimation animation;
     EntityPosition pos;
-    int speed;
+    int rep;
     int current_frame;
-    struct animationStackItem *nextAnimation;
-} AnimationStackItem;
+} AnimationQueueItem;
 
 static Layer *_window_layer = NULL;
 static Layer *_game_area_layer = NULL;
@@ -31,45 +30,40 @@ static Layer *_status_layer = NULL;
 static TextLayer* _msg_box_layer = NULL;
 static AppTimer *_animationRenderTimer = NULL;
 static Creature *_currentCreature = NULL;
+static int current_fps = DEFAULT_FPS;
 
+static AnimationQueueItem *_animation_queue[MAX_ANIMATION_QUEUE];
+static int _animation_queue_size = 0;
 
-//filo stack!!
-static AnimationStackItem *_animation_stack = NULL;
-static int _animation_stack_size = 0;
-
-static void add_to_animation_stack(SpriteAnimation animation, EntityPosition pos, int speed){
-  if(_animation_stack_size < MAX_ANIMATION_STACK){
-     AnimationStackItem *item = malloc(sizeof(AnimationStackItem));
+static void add_to_animation_queue(SpriteAnimation animation, EntityPosition pos, int rep, int fpsAdjust){
+  if(_animation_queue_size < MAX_ANIMATION_QUEUE){
+     AnimationQueueItem *item = malloc(sizeof(AnimationQueueItem));
      item->pos = pos;
-     item->speed = speed;
+     item->rep = rep;
      item->animation = animation;
      item->current_frame = animation.startFrame;
-      if(_animation_stack == NULL){
-            item->nextAnimation = NULL;
-            _animation_stack = item;
-      }else{
-        item->nextAnimation = _animation_stack;
-        _animation_stack = item;
-      }
-    _animation_stack_size++;
+     _animation_queue[_animation_queue_size] = item;
+     _animation_queue_size++;
+    current_fps = (!fpsAdjust) ? DEFAULT_FPS : fpsAdjust;
   }  
 }
 
 static void animationTimerTick(void *data) {
-  if(_animation_stack_size == 0 && is_alive(_currentCreature)){
-    creature_idle_animation(_currentCreature,add_to_animation_stack);
+  if(_animation_queue_size == 0 && is_alive(_currentCreature)){
+    creature_idle_animation(_currentCreature,add_to_animation_queue);
   }
   layer_mark_dirty(_game_area_layer);
-  _animationRenderTimer = app_timer_register(1000/FPS, animationTimerTick, NULL);
+  _animationRenderTimer = app_timer_register(1000/current_fps, animationTimerTick, NULL);
    
-}
-
-static bool controls_enabled(){
-  return _animation_stack_size <= 1;
 }
 
 static void update_stati(){
   layer_mark_dirty(_status_layer);
+}
+
+
+static AnimationQueueItem* dequeueAnimation(){
+  return _animation_queue[_animation_queue_size-1];
 }
 
 static void render(Layer *layer, GContext *ctx){
@@ -81,17 +75,21 @@ static void render(Layer *layer, GContext *ctx){
   GBitmap *bg = get_background(); 
   graphics_draw_bitmap_in_rect(ctx,bg ,GRect(bounds.origin.x, bounds.origin.y, bounds.size.w, bounds.size.h));
   
-  if(_animation_stack_size > 0){
-    GBitmap *frame = get_sprite_frame(_animation_stack->animation.row,_animation_stack->current_frame);
+  if(_animation_queue_size > 0){
+    AnimationQueueItem *item = dequeueAnimation();
+    GBitmap *frame = get_sprite_frame(item->animation.row,item->current_frame);
     EntityPosition *p = get_creature_current_position(_currentCreature);
     graphics_draw_bitmap_in_rect(ctx,frame , GRect(p->x, p->y, 32, 32));
-    _animation_stack->current_frame++;
+    item->current_frame++;
    
-    int deltaX = p->x - _animation_stack->pos.x;
-    int deltaY = p->y - _animation_stack->pos.y;
-    if(_animation_stack->current_frame > _animation_stack->animation.endFrame){
-        _animation_stack->current_frame = _animation_stack->animation.startFrame;
+    int deltaX = (item->pos.set) ? p->x - item->pos.x : 0;
+    int deltaY = (item->pos.set) ? p->y - item->pos.y : 0;
+    if(deltaX || deltaY){
+       if(item->current_frame > item->animation.endFrame){
+        item->current_frame = item->animation.startFrame;
+      }
     }
+ 
     if(deltaX){
       if(deltaX < 0){
         p->x++;
@@ -105,14 +103,15 @@ static void render(Layer *layer, GContext *ctx){
         p->y--;
       }
     }else{
-        if(_animation_stack->speed > 1){
-          _animation_stack->speed--;
+        if(item->rep > 1){
+          item->rep--;
         }
-        if(_animation_stack->speed <= 1){
-            AnimationStackItem *next = _animation_stack->nextAnimation;
-            free(_animation_stack);
-            _animation_stack = next;
-            _animation_stack_size--;
+        else{
+           if(item->current_frame > item->animation.endFrame){
+              free(item);
+               _animation_queue[_animation_queue_size] = NULL;
+              _animation_queue_size--;
+           }
         }
       
     }
@@ -158,6 +157,22 @@ static void creature_died(){
  layer_add_child(_window_layer, text_layer_get_layer(_msg_box_layer));
 }
 
+static void restart(){
+  layer_destroy(text_layer_get_layer(_msg_box_layer));
+  _msg_box_layer = NULL;
+  dispose_game_ctx();
+  init_game_ctx(add_to_animation_queue,update_stati,creature_died);
+  _currentCreature = get_creature_from_ctx();
+  _animationRenderTimer = app_timer_register(1000/DEFAULT_FPS, animationTimerTick, NULL);
+}
+
+static bool controls_enabled(){
+  if(_currentCreature != NULL && !is_alive(_currentCreature)){
+    restart();
+    return false;
+  }
+  return _animation_queue_size <= 1;
+}
 
 
 static void windowUnload(Window *window) {
@@ -181,7 +196,7 @@ static void windowLoad(Window *window) {
   layer_set_update_proc(_game_area_layer, render);
   layer_add_child(window_layer, _game_area_layer);
   
-  _animationRenderTimer = app_timer_register(1000/FPS, animationTimerTick, NULL);
+  _animationRenderTimer = app_timer_register(1000/DEFAULT_FPS, animationTimerTick, NULL);
   _window_layer = window_layer;
 
 }
@@ -192,10 +207,8 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
   }
 }
 
-static void back_click_handler(ClickRecognizerRef recognizer, void *context) {
-  if(controls_enabled()){
-    command_put_to_sleep();
-  }
+static void back_click_handler(ClickRecognizerRef recognizer, void *context) {   
+  creature_falling_alseep(add_to_animation_queue);
 }
 
 static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
@@ -210,6 +223,7 @@ static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
   } 
 }
 
+
 static void click_config_provider(void *context) {
   window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);
   window_single_click_subscribe(BUTTON_ID_UP, up_click_handler);
@@ -218,7 +232,7 @@ static void click_config_provider(void *context) {
 }
 
 void initializeRenderEngine(Window *w){
-    init_game_ctx(add_to_animation_stack,update_stati,creature_died);
+    init_game_ctx(add_to_animation_queue,update_stati,creature_died);
     _currentCreature = get_creature_from_ctx();
     window_set_window_handlers(w, (WindowHandlers) {
     .load = windowLoad,

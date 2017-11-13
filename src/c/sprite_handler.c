@@ -14,6 +14,8 @@
 static GBitmap *_basic_sprite_sheet;
 static GBitmap *_background;
 
+static GBitmap *_sub = NULL;
+
 void init_sprites(){
    _basic_sprite_sheet = gbitmap_create_with_resource(RESOURCE_ID_AVA_SPRITES);
    _background = gbitmap_create_with_resource(RESOURCE_ID_INDOOR_BACKGROUND);
@@ -27,7 +29,11 @@ static GRect get_sprite_frame_rectangle(int row, int frame){
 GBitmap* get_sprite_frame(int row, int frame){
   //according to the pebble doc this will only create a link to the main image
   //so we willl just finish of the main image in the end 
-  return gbitmap_create_as_sub_bitmap(_basic_sprite_sheet,get_sprite_frame_rectangle(row,frame));
+  if(_sub != NULL){
+    gbitmap_destroy(_sub);
+  }
+  _sub = gbitmap_create_as_sub_bitmap(_basic_sprite_sheet,get_sprite_frame_rectangle(row,frame));
+  return _sub;
 }
 
 GBitmap* get_background(){

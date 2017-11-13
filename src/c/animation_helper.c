@@ -63,94 +63,67 @@ EntityPosition* get_creature_current_position(Creature *c){
 
 void creature_is_playing(Creature *c, animationCallback *cb){
      CurrentPosition *src = getCreatureFromMap(c);
-  
       cb((SpriteAnimation){
             .row = 3,
             .startFrame = 0,
             .endFrame = 3
          },(EntityPosition){
+            .set = true,
             .x = 0,
             .y = src->position.y
-        },1);
-        src->position.x = 0;
-    
+        },1,24);
+
         cb((SpriteAnimation){
             .row = 8,
             .startFrame = 0,
             .endFrame = 2
          },(EntityPosition){
-            .x = 50,
+            .set = true,
+            .x = 80,
             .y = src->position.y
-        },1);    
-       src->position.x = 50;
-     
+        },1,24);       
 }
 
 
-void creature_is_sleepy(Creature *c, animationCallback *cb){
-     CurrentPosition *src = getCreatureFromMap(c);
+void creature_is_sleepy(animationCallback *cb){
      cb((SpriteAnimation){
         .row = 6,
         .startFrame = 0,
-        .endFrame = 3
+        .endFrame = 2
      },(EntityPosition){
-        .x = src->position.x,
-        .y = src->position.y
-    },1);
+        .set = false
+    },1,0);
 }
 
-void creature_falling_alseep(Creature *c, animationCallback *cb){
-    CurrentPosition *src = getCreatureFromMap(c);
-    cb((SpriteAnimation){
-        .row = 5,
-        .startFrame = 0,
-        .endFrame = 3
-     },(EntityPosition){
-        .x = src->position.x,
-        .y = src->position.y
-    },2);
-    cb((SpriteAnimation){
-        .row = 6,
-        .startFrame = 0,
-        .endFrame = 3
-     },(EntityPosition){
-        .x = src->position.x,
-        .y = src->position.y
-    },1);
+void creature_falling_alseep(animationCallback *cb){
      cb((SpriteAnimation){
         .row = 7,
         .startFrame = 0,
         .endFrame = 1
      },(EntityPosition){
-        .x = src->position.x,
-        .y = src->position.y
-     },1);
+       .set = false
+     },1,0);
+
+    cb((SpriteAnimation){
+        .row = 6,
+        .startFrame = 0,
+        .endFrame = 3
+     },(EntityPosition){
+       .set = false
+    },1,0);
+  
+    cb((SpriteAnimation){
+        .row = 5,
+        .startFrame = 0,
+        .endFrame = 3
+     },(EntityPosition){
+       .set = false
+    },1,0);
 }
 
 void move_creature(Creature *c, EntityPosition p, animationCallback *cb){
     CurrentPosition *src = getCreatureFromMap(c);
-    int deltaX = src->position.x - p.x;
-    if(deltaX){
-        if(deltaX < 0){ // right
-            cb((SpriteAnimation){
-                .row = 1,
-                .startFrame = 0,
-                .endFrame = 3
-            },(EntityPosition){
-                .x = p.x,
-                .y = src->position.y
-            },1);
-        }else{ //left
-             cb((SpriteAnimation){
-                .row = 3,
-                .startFrame = 0,
-                .endFrame = 3
-            },(EntityPosition){
-                .x = p.x,
-                .y = src->position.y
-            },1);
-        }
-    }
+
     int deltaY = src->position.y - p.y;
     if(deltaY){
         if(deltaY < 0){ //down
@@ -159,20 +132,46 @@ void move_creature(Creature *c, EntityPosition p, animationCallback *cb){
                 .startFrame = 0,
                 .endFrame = 3
             },(EntityPosition){
+                .set = true,
                 .x = p.x,
                 .y = p.y
-            },1);
+            },1,24);
         }else{ //up
             cb((SpriteAnimation){
                 .row = 2,
                 .startFrame = 0,
                 .endFrame = 3
             },(EntityPosition){
+                .set = true,
                 .x = p.x,
                 .y = p.y
-            },1);
+            },1,24);
         }
     }
+      int deltaX = src->position.x - p.x;
+      if(deltaX){
+          if(deltaX < 0){ // right
+              cb((SpriteAnimation){
+                  .row = 1,
+                  .startFrame = 0,
+                  .endFrame = 3
+              },(EntityPosition){
+                  .set = true, 
+                  .x = p.x,
+                  .y = src->position.y
+              },1,24);
+          }else{ //left
+               cb((SpriteAnimation){
+                  .row = 3,
+                  .startFrame = 0,
+                  .endFrame = 3
+              },(EntityPosition){
+                  .set = true,
+                  .x = p.x,
+                  .y = src->position.y
+              },1,24);
+          }
+      }
 }
 
 void creature_idle_animation(Creature *c, animationCallback *cb){
@@ -183,9 +182,8 @@ void creature_idle_animation(Creature *c, animationCallback *cb){
         .startFrame = 0,
         .endFrame = 1
      },(EntityPosition){
-        .x = src->position.x,
-        .y = src->position.y
-     },1);
+         .set = false
+     },1,0);
   }else{
     if(status_percentage(Rested, src->creature) > 50){
       cb((SpriteAnimation){
@@ -193,18 +191,16 @@ void creature_idle_animation(Creature *c, animationCallback *cb){
         .startFrame = 0,
         .endFrame = 3
        },(EntityPosition){
-        .x = src->position.x,
-        .y = src->position.y
-       },1);
+         .set = false
+       },1,0);
     }else{
        cb((SpriteAnimation){
         .row = 6,
         .startFrame = 0,
         .endFrame = 1
        },(EntityPosition){
-        .x = src->position.x,
-        .y = src->position.y
-       },1);
+         .set = false
+       },1,0);
     }
 
   }
