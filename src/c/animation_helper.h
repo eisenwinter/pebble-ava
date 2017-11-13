@@ -89,3 +89,6 @@ typedef void animationCallback(SpriteAnimation animation, EntityPosition pos, in
   * @param cb animation to be done
   */
  void creature_is_playing(Creature *c, animationCallback *cb);
+ 
+void creature_idle_animation(Creature *c, animationCallback *cb);
+EntityPosition* get_creature_current_position(Creature *c);

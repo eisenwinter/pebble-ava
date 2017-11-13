@@ -91,6 +91,9 @@ void heartbeat(Creature *c){
 }
 
 bool feed(Creature *c){
+  if(c->asleep){
+    return false;
+  }
 	if(c->hunger < DEFAULT_STAT){
 		//"overfeeding" is possible by design
 		c->hunger = c->hunger + DEFAULT_FOOD_VALUE;
@@ -100,6 +103,9 @@ bool feed(Creature *c){
 }
 
 bool play(Creature *c){
+  if(c->asleep){
+    return false;
+  }
 	if(c->hapiness < DEFAULT_STAT){
 		//but is there really a boundry for hapiness?!
 		//well same as overfeeding, it can be "overhappy" as well
@@ -110,7 +116,7 @@ bool play(Creature *c){
 }
  
 bool put_to_sleep(Creature *c){
-	if((!c->asleep) && (c->rested < DEFAULT_STAT*0.2)){
+	if((!c->asleep) && (c->rested < DEFAULT_STAT*0.3)){
 		c->asleep = true;
 		return true;
 	}
@@ -127,6 +133,9 @@ bool is_asleep(Creature *c){
 }
 
 int status_percentage(CreatureStatus status, Creature *c){
+  if(!is_alive(c)){
+    return 0;
+  }
 	switch(status){
 		case Rested: ; //variable decl is no statement - so empty statement fix :/
 			int r = (c->rested * 100) / DEFAULT_STAT;
