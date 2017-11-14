@@ -194,6 +194,7 @@ static void windowUnload(Window *window) {
  layer_destroy(_status_layer);
  dispose_game_ctx();
  dispose_sprites();
+ light_enable(false);
 }
 
 static void windowLoad(Window *window) {
@@ -213,6 +214,7 @@ static void windowLoad(Window *window) {
   
   _animationRenderTimer = app_timer_register(1000/DEFAULT_FPS, animationTimerTick, NULL);
   _window_layer = window_layer;
+  light_enable(true);
 
 }
 
