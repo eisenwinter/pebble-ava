@@ -11,6 +11,12 @@
         "resources": {
             "media": [
                 {
+                    "file": "images/STATUS_BAR",
+                    "name": "STATUS_BAR",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
                     "file": "images/INDOOR_BACKGROUND",
                     "name": "INDOOR_BACKGROUND",
                     "targetPlatforms": null,

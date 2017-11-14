@@ -10,4 +10,5 @@
 void init_sprites();
 GBitmap* get_sprite_frame(int row, int frame);
 GBitmap* get_background();
+GBitmap* get_status_legend();
 void dispose_sprites();

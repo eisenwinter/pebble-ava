@@ -63,7 +63,16 @@ EntityPosition* get_creature_current_position(Creature *c){
 
 void creature_is_playing(Creature *c, animationCallback *cb){
      CurrentPosition *src = getCreatureFromMap(c);
-      cb((SpriteAnimation){
+        cb((SpriteAnimation){
+            .row = 8,
+            .startFrame = 0,
+            .endFrame = 2
+         },(EntityPosition){
+            .set = true,
+            .x = 80,
+            .y = src->position.y
+        },1,24);      
+        cb((SpriteAnimation){
             .row = 3,
             .startFrame = 0,
             .endFrame = 3
@@ -73,15 +82,6 @@ void creature_is_playing(Creature *c, animationCallback *cb){
             .y = src->position.y
         },1,24);
 
-        cb((SpriteAnimation){
-            .row = 8,
-            .startFrame = 0,
-            .endFrame = 2
-         },(EntityPosition){
-            .set = true,
-            .x = 80,
-            .y = src->position.y
-        },1,24);       
 }
 
 void creature_is_eating(animationCallback *cb){

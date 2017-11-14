@@ -1,5 +1,5 @@
 #include <pebble.h>
-#include "render_engine.h"
+#include "game_engine.h"
 
 /*
  * @Author: Jan Caspar 
@@ -12,7 +12,7 @@ static Window *window = NULL;
 
 static void init(void) {
   window = window_create();
-  initializeRenderEngine(window);
+  initialize_game_engine(window);
   const bool animated = true;
   window_stack_push(window, animated);
 }
@@ -23,9 +23,6 @@ static void deinit(void) {
 
 int main(void) {
   init();
-
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Done initializing, pushed window: %p", window);
-
   app_event_loop();
   deinit();
 }

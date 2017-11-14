@@ -1,5 +1,5 @@
  //timeh.h not working?!
-#include<pebble.h>
+#include <pebble.h>
 #include <stdlib.h>
 #include "creature.h"
 #define DEFAULT_STAT 50
@@ -17,7 +17,6 @@
 #define DEFAULT_PLAY_VALUE 12
 
 typedef struct creature {
-    char *name;
     time_t born;
 	  Age currentAge;
     bool asleep;
@@ -27,9 +26,8 @@ typedef struct creature {
     int health;
 } Creature;
 
-Creature* create_creature(char* name){
+Creature* create_creature(){
 	Creature *c = malloc(sizeof(Creature));
-	c->name = name;
 	c->hunger = DEFAULT_STAT / 2;
 	c->hapiness = DEFAULT_STAT / 2;
 	c->rested = DEFAULT_STAT / 2;
@@ -39,6 +37,8 @@ Creature* create_creature(char* name){
 	c->asleep = false;
 	return c;
 }
+
+
 
 void dispose_creature(Creature *c){
 	free(c);
@@ -96,7 +96,7 @@ bool feed(Creature *c){
   }
 	if(c->hunger < DEFAULT_STAT){
 		//"overfeeding" is possible by design
-		c->hunger = c->hunger + DEFAULT_FOOD_VALUE;
+		c->hunger = c->hunger + (DEFAULT_FOOD_VALUE - c->currentAge);
 		return true;
 	}
 	return false;
@@ -109,7 +109,7 @@ bool play(Creature *c){
 	if(c->hapiness < DEFAULT_STAT){
 		//but is there really a boundry for hapiness?!
 		//well same as overfeeding, it can be "overhappy" as well
-		c->hapiness = c->hapiness + DEFAULT_PLAY_VALUE;
+		c->hapiness = c->hapiness + (DEFAULT_FOOD_VALUE - c->currentAge);
 		return true;
 	}
 	return false;
@@ -161,6 +161,33 @@ int status_percentage(CreatureStatus status, Creature *c){
 	}
 }
 
-char* get_creature_name(Creature *c){
-	return c->name;
+void save_creature(Creature *c){
+   persist_write_int(101,c->hapiness);
+   persist_write_int(102,c->rested);
+   persist_write_int(103,c->hunger);
+   persist_write_int(104,c->health);
+   persist_write_int(105,c->currentAge);
+   persist_write_bool(106,c->asleep);
+   persist_write_data(107,&c->born,sizeof(time_t));
+}
+
+Creature* restore_saved_creature(int hbFrequency){
+   if(persist_exists(101)){
+     Creature *c = malloc(sizeof(Creature));
+     c->hapiness = persist_read_int(101);
+     c->rested = persist_read_int(102);
+     c->hunger = persist_read_int(103);
+     c->health = persist_read_int(104);
+     c->currentAge = persist_read_int(105);
+     c->asleep = persist_read_bool(106); 
+     persist_read_data(107, &c->born,sizeof(time_t));
+     int hbsSecs = hbFrequency / 1000;
+     //time passes slower when no on screen
+     int delta = ((time(0) - c->born) / hbsSecs) / 10;
+     for(int i = 0; i < delta; i++){
+       heartbeat(c);
+     }
+     return c;
+   }
+  return NULL;
 }

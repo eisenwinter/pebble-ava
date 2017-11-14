@@ -1,7 +1,7 @@
 #include <pebble.h>
 #include <stdbool.h>
 #include "sprite_handler.h"
-#include "render_engine.h"
+#include "game_engine.h"
 #include "animation_helper.h"
 #include "creature.h"
 #include "game_context.h"
@@ -89,7 +89,6 @@ static void render(Layer *layer, GContext *ctx){
         item->current_frame = item->animation.startFrame;
       }
     }
- 
     if(deltaX){
       if(deltaX < 0){
         p->x++;
@@ -109,7 +108,7 @@ static void render(Layer *layer, GContext *ctx){
         else{
            if(item->current_frame > item->animation.endFrame){
               free(item);
-               _animation_queue[_animation_queue_size] = NULL;
+              _animation_queue[_animation_queue_size-1] = NULL;
               _animation_queue_size--;
            }
         }
@@ -124,6 +123,10 @@ static void statusbar_update_proc(Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_bounds(layer);
   graphics_context_set_fill_color(ctx, GColorVividCerulean);
   graphics_fill_rect(ctx, bounds, 0, GCornerNone);
+  
+  graphics_context_set_compositing_mode(ctx, GCompOpSet);
+  GBitmap *statuslegend = get_status_legend(); 
+  graphics_draw_bitmap_in_rect(ctx,statuslegend,GRect(bounds.origin.x + 111, bounds.origin.y + 5, 30, 25));
   
   graphics_draw_rect(ctx, GRect(4,4,102,7));
   graphics_draw_rect(ctx, GRect(4,14,102,7));
@@ -157,10 +160,19 @@ static void creature_died(){
  layer_add_child(_window_layer, text_layer_get_layer(_msg_box_layer));
 }
 
+static void clear_animation_queue(){
+  while(_animation_queue_size > 0){
+         free(_animation_queue[_animation_queue_size-1]);
+        _animation_queue[_animation_queue_size-1] = NULL;
+        _animation_queue_size--;
+  }
+}
+
 static void restart(){
   layer_destroy(text_layer_get_layer(_msg_box_layer));
   _msg_box_layer = NULL;
   dispose_game_ctx();
+  clear_animation_queue();
   init_game_ctx(add_to_animation_queue,update_stati,creature_died);
   _currentCreature = get_creature_from_ctx();
   _animationRenderTimer = app_timer_register(1000/DEFAULT_FPS, animationTimerTick, NULL);
@@ -176,8 +188,11 @@ static bool controls_enabled(){
 
 
 static void windowUnload(Window *window) {
+ app_timer_cancel(_animationRenderTimer);
+ clear_animation_queue();
  layer_destroy(_game_area_layer); 
  layer_destroy(_status_layer);
+ dispose_game_ctx();
  dispose_sprites();
 }
 
@@ -203,24 +218,22 @@ static void windowLoad(Window *window) {
 
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
   if(controls_enabled()){
-     command_put_to_sleep();
-  }
-}
-
-static void back_click_handler(ClickRecognizerRef recognizer, void *context) {   
-  creature_falling_alseep(add_to_animation_queue);
-}
-
-static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
-  if(controls_enabled()){
     command_play();
   }
 }
 
-static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
+static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
   if(controls_enabled()){
     command_feed();
   } 
+}
+
+static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
+
+  if(controls_enabled()){
+     command_put_to_sleep();
+  }
+  
 }
 
 
@@ -228,10 +241,9 @@ static void click_config_provider(void *context) {
   window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);
   window_single_click_subscribe(BUTTON_ID_UP, up_click_handler);
   window_single_click_subscribe(BUTTON_ID_DOWN, down_click_handler);
-  window_single_click_subscribe(BUTTON_ID_BACK, back_click_handler);
 }
 
-void initializeRenderEngine(Window *w){
+void initialize_game_engine(Window *w){
     init_game_ctx(add_to_animation_queue,update_stati,creature_died);
     _currentCreature = get_creature_from_ctx();
     window_set_window_handlers(w, (WindowHandlers) {

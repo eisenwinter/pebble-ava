@@ -8,14 +8,14 @@
 
 #include <stdbool.h>
 
-typedef enum age { Baby, Teen, Adult } Age;
+typedef enum age { Baby = 0, Teen = 2, Adult = 6 } Age;
 
 typedef enum creatureStatus { Rested, Hapiness, Hunger } CreatureStatus;
 
 typedef struct creature Creature;
 
 
-Creature* create_creature(char* name);
+Creature* create_creature();
 void dispose_creature(Creature *c);
 
 void heartbeat(Creature *c);
@@ -30,6 +30,8 @@ bool is_alive(Creature *c);
 
 bool is_asleep(Creature *c);
 
-char* get_creature_name(Creature *c);
-
 int status_percentage(CreatureStatus status, Creature *c);
+
+void save_creature(Creature *c);
+
+Creature* restore_saved_creature(int hbFrequency);
