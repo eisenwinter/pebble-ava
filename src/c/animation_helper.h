@@ -32,13 +32,23 @@ typedef struct entityPosition {
      int y;
 } EntityPosition;
 
+
+typedef struct animationQueueItem {
+    SpriteAnimation animation;
+    EntityPosition pos;
+    int rep;
+    int current_frame;
+    int fps_adjust;
+} AnimationQueueItem;
+
+
 /**
  * @brief this will be fire when a certain movevment with a certain animation is wanted
  * 
  * @param animation the animation to be done
  * @param pos the position its walking towards to 
  */
-typedef void animationCallback(SpriteAnimation animation, EntityPosition pos, int rep, int fpsAdjust);
+typedef void animationCallback(AnimationQueueItem *item);
  
 /**
  * @brief spawns a creature on the visible fiel
@@ -89,7 +99,7 @@ typedef void animationCallback(SpriteAnimation animation, EntityPosition pos, in
   */
  void creature_is_playing(Creature *c, animationCallback *cb);
  
-void creature_idle_animation(Creature *c, animationCallback *cb);
+AnimationQueueItem* creature_idle_animation(Creature *c);
 EntityPosition* get_creature_current_position(Creature *c);
 void creature_is_eating(animationCallback *cb);
 void creature_denying(animationCallback *cb);

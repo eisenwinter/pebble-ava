@@ -61,9 +61,19 @@ EntityPosition* get_creature_current_position(Creature *c){
     return &src->position;
 }
 
+static AnimationQueueItem* AnimationQueueItemFactory(SpriteAnimation animation, EntityPosition pos, int rep, int fpsAdjust){
+   AnimationQueueItem *item = malloc(sizeof(AnimationQueueItem));
+   item->animation = animation;
+   item->pos = pos;
+   item->rep = rep;
+   item->fps_adjust = fpsAdjust;
+   item->current_frame = animation.startFrame;
+   return item;
+} 
+
 void creature_is_playing(Creature *c, animationCallback *cb){
      CurrentPosition *src = getCreatureFromMap(c);
-        cb((SpriteAnimation){
+        cb(AnimationQueueItemFactory((SpriteAnimation){
             .row = 8,
             .startFrame = 0,
             .endFrame = 2
@@ -71,8 +81,8 @@ void creature_is_playing(Creature *c, animationCallback *cb){
             .set = true,
             .x = 80,
             .y = src->position.y
-        },1,24);      
-        cb((SpriteAnimation){
+        },1,24));      
+        cb(AnimationQueueItemFactory((SpriteAnimation){
             .row = 3,
             .startFrame = 0,
             .endFrame = 3
@@ -80,64 +90,65 @@ void creature_is_playing(Creature *c, animationCallback *cb){
             .set = true,
             .x = 0,
             .y = src->position.y
-        },1,24);
+        },1,24));
 
 }
 
 void creature_is_eating(animationCallback *cb){
-     cb((SpriteAnimation){
+     cb(AnimationQueueItemFactory((SpriteAnimation){
         .row = 9,
         .startFrame = 0,
         .endFrame = 3
      },(EntityPosition){
         .set = false
-    },5,0);
+    },5,0));
 }
 
 void creature_denying(animationCallback *cb){
-     cb((SpriteAnimation){
+    
+     cb(AnimationQueueItemFactory((SpriteAnimation){
         .row = 10,
         .startFrame = 0,
         .endFrame = 3
      },(EntityPosition){
         .set = false
-    },3,0);
+    },3,0));
 }
 
 void creature_is_sleepy(animationCallback *cb){
-     cb((SpriteAnimation){
+     cb(AnimationQueueItemFactory((SpriteAnimation){
         .row = 6,
         .startFrame = 0,
         .endFrame = 2
      },(EntityPosition){
         .set = false
-    },1,0);
+    },1,0));
 }
 
 void creature_falling_alseep(animationCallback *cb){
-     cb((SpriteAnimation){
+     cb(AnimationQueueItemFactory((SpriteAnimation){
         .row = 7,
         .startFrame = 0,
         .endFrame = 1
      },(EntityPosition){
        .set = false
-     },1,0);
+     },1,0));
 
-    cb((SpriteAnimation){
+    cb(AnimationQueueItemFactory((SpriteAnimation){
         .row = 6,
         .startFrame = 0,
         .endFrame = 3
      },(EntityPosition){
        .set = false
-    },1,0);
+    },1,0));
   
-    cb((SpriteAnimation){
+    cb(AnimationQueueItemFactory((SpriteAnimation){
         .row = 5,
         .startFrame = 0,
         .endFrame = 3
      },(EntityPosition){
        .set = false
-    },1,0);
+    },1,0));
 }
 
 void move_creature(Creature *c, EntityPosition p, animationCallback *cb){
@@ -146,7 +157,7 @@ void move_creature(Creature *c, EntityPosition p, animationCallback *cb){
     int deltaY = src->position.y - p.y;
     if(deltaY){
         if(deltaY < 0){ //down
-            cb((SpriteAnimation){
+            cb(AnimationQueueItemFactory((SpriteAnimation){
                 .row = 4,
                 .startFrame = 0,
                 .endFrame = 3
@@ -154,9 +165,9 @@ void move_creature(Creature *c, EntityPosition p, animationCallback *cb){
                 .set = true,
                 .x = p.x,
                 .y = p.y
-            },1,24);
+            },1,24));
         }else{ //up
-            cb((SpriteAnimation){
+            cb(AnimationQueueItemFactory((SpriteAnimation){
                 .row = 2,
                 .startFrame = 0,
                 .endFrame = 3
@@ -164,13 +175,13 @@ void move_creature(Creature *c, EntityPosition p, animationCallback *cb){
                 .set = true,
                 .x = p.x,
                 .y = p.y
-            },1,24);
+            },1,24));
         }
     }
       int deltaX = src->position.x - p.x;
       if(deltaX){
           if(deltaX < 0){ // right
-              cb((SpriteAnimation){
+              cb(AnimationQueueItemFactory((SpriteAnimation){
                   .row = 1,
                   .startFrame = 0,
                   .endFrame = 3
@@ -178,9 +189,9 @@ void move_creature(Creature *c, EntityPosition p, animationCallback *cb){
                   .set = true, 
                   .x = p.x,
                   .y = src->position.y
-              },1,24);
+              },1,24));
           }else{ //left
-               cb((SpriteAnimation){
+               cb(AnimationQueueItemFactory((SpriteAnimation){
                   .row = 3,
                   .startFrame = 0,
                   .endFrame = 3
@@ -188,15 +199,15 @@ void move_creature(Creature *c, EntityPosition p, animationCallback *cb){
                   .set = true,
                   .x = p.x,
                   .y = src->position.y
-              },1,24);
+              },1,24));
           }
       }
 }
 
-void creature_idle_animation(Creature *c, animationCallback *cb){
+AnimationQueueItem* creature_idle_animation(Creature *c){
   CurrentPosition *src = getCreatureFromMap(c);
   if(is_asleep(src->creature)){
-     cb((SpriteAnimation){
+     return AnimationQueueItemFactory((SpriteAnimation){
         .row = 7,
         .startFrame = 0,
         .endFrame = 1
@@ -205,7 +216,7 @@ void creature_idle_animation(Creature *c, animationCallback *cb){
      },1,0);
   }else{
     if(status_percentage(Rested, src->creature) > 50){
-      cb((SpriteAnimation){
+      return AnimationQueueItemFactory((SpriteAnimation){
         .row = 0,
         .startFrame = 0,
         .endFrame = 3
@@ -213,7 +224,7 @@ void creature_idle_animation(Creature *c, animationCallback *cb){
          .set = false
        },1,0);
     }else{
-       cb((SpriteAnimation){
+       return AnimationQueueItemFactory((SpriteAnimation){
         .row = 6,
         .startFrame = 0,
         .endFrame = 1

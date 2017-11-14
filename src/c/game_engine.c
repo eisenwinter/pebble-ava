@@ -17,12 +17,6 @@
 //fps for delta frame time
 #define DEFAULT_FPS 3
 
-typedef struct animationQueueItem {
-    SpriteAnimation animation;
-    EntityPosition pos;
-    int rep;
-    int current_frame;
-} AnimationQueueItem;
 
 static Layer *_window_layer = NULL;
 static Layer *_game_area_layer = NULL;
@@ -34,24 +28,18 @@ static int current_fps = DEFAULT_FPS;
 
 static AnimationQueueItem *_animation_queue[MAX_ANIMATION_QUEUE];
 static int _animation_queue_size = 0;
+static AnimationQueueItem *_idle_animation = NULL;
 
-static void add_to_animation_queue(SpriteAnimation animation, EntityPosition pos, int rep, int fpsAdjust){
+static void add_to_animation_queue(AnimationQueueItem *item){
   if(_animation_queue_size < MAX_ANIMATION_QUEUE){
-     AnimationQueueItem *item = malloc(sizeof(AnimationQueueItem));
-     item->pos = pos;
-     item->rep = rep;
-     item->animation = animation;
-     item->current_frame = animation.startFrame;
      _animation_queue[_animation_queue_size] = item;
      _animation_queue_size++;
-    current_fps = (!fpsAdjust) ? DEFAULT_FPS : fpsAdjust;
-  }  
+  }else{
+    free(item);
+  }
 }
 
 static void animationTimerTick(void *data) {
-  if(_animation_queue_size == 0 && is_alive(_currentCreature)){
-    creature_idle_animation(_currentCreature,add_to_animation_queue);
-  }
   layer_mark_dirty(_game_area_layer);
   _animationRenderTimer = app_timer_register(1000/current_fps, animationTimerTick, NULL);
    
@@ -76,7 +64,10 @@ static void render(Layer *layer, GContext *ctx){
   graphics_draw_bitmap_in_rect(ctx,bg ,GRect(bounds.origin.x, bounds.origin.y, bounds.size.w, bounds.size.h));
   
   if(_animation_queue_size > 0){
+    free(_idle_animation);
+    _idle_animation = NULL;
     AnimationQueueItem *item = dequeueAnimation();
+    current_fps = (item->fps_adjust) ? item->fps_adjust : DEFAULT_FPS;
     GBitmap *frame = get_sprite_frame(item->animation.row,item->current_frame);
     EntityPosition *p = get_creature_current_position(_currentCreature);
     graphics_draw_bitmap_in_rect(ctx,frame , GRect(p->x, p->y, 32, 32));
@@ -111,11 +102,21 @@ static void render(Layer *layer, GContext *ctx){
               _animation_queue[_animation_queue_size-1] = NULL;
               _animation_queue_size--;
            }
-        }
-      
+        } 
+    }
+  }else{
+    if(_idle_animation == NULL){
+      _idle_animation = creature_idle_animation(_currentCreature);
     }
     
-   
+    GBitmap *frame = get_sprite_frame(_idle_animation->animation.row,_idle_animation->current_frame);
+    EntityPosition *p = get_creature_current_position(_currentCreature);
+    graphics_draw_bitmap_in_rect(ctx,frame , GRect(p->x, p->y, 32, 32));
+    _idle_animation->current_frame++;
+    if(_idle_animation->current_frame > _idle_animation->animation.endFrame){
+       _idle_animation->current_frame = _idle_animation->animation.startFrame;
+    }
+
   }
 }
 
