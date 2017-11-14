@@ -42,6 +42,8 @@ and just enjoy having her arround.
 
 ![screenshot](https://raw.githubusercontent.com/eisenwinter/pebble-ava/master/assets/screen-3.PNG "Screenshots")
 
+![screenshot](https://raw.githubusercontent.com/eisenwinter/pebble-ava/master/assets/screen-4.PNG "Screenshots")
+
 ## How to build from source
 
 Download the ZIP and import it on cloudpebble. 
