@@ -147,6 +147,9 @@ static void statusbar_update_proc(Layer *layer, GContext *ctx) {
   int restedPercs = status_percentage(Rested,_currentCreature);
   GRect restedBar = GRect(5,25,restedPercs,5);
   graphics_fill_rect(ctx,restedBar,0,GCornerNone);
+  
+  graphics_context_set_fill_color(ctx, GColorCobaltBlue);
+  graphics_draw_line(ctx, GPoint(0,bounds.size.h-1), GPoint(bounds.size.w,bounds.size.h-1));
 }
 
 static void creature_died(){

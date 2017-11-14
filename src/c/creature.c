@@ -18,6 +18,7 @@
 
 typedef struct creature {
     time_t born;
+    time_t last_save;
 	  Age currentAge;
     bool asleep;
     int hunger;
@@ -169,6 +170,8 @@ void save_creature(Creature *c){
    persist_write_int(105,c->currentAge);
    persist_write_bool(106,c->asleep);
    persist_write_data(107,&c->born,sizeof(time_t));
+   c->last_save = time(0);
+   persist_write_data(108,&c->last_save,sizeof(time_t));
 }
 
 Creature* restore_saved_creature(int hbFrequency){
@@ -183,9 +186,18 @@ Creature* restore_saved_creature(int hbFrequency){
      persist_read_data(107, &c->born,sizeof(time_t));
      int hbsSecs = hbFrequency / 1000;
      //time passes slower when no on screen
-     int delta = ((time(0) - c->born) / hbsSecs) / 10;
+     int delta = ((time(0) - c->last_save) / hbsSecs) / 10;
      for(int i = 0; i < delta; i++){
        heartbeat(c);
+     }
+     //ava only ages when you  dont look, its like in real life - you certainly wont
+     //notice people aging you see every day but you rather notice when you havent seen
+     //them in a while
+     int ageDelta = (time(0) - c->last_save) / hbsSecs;
+     if(ageDelta > 100 && c->currentAge == Baby){
+       c->currentAge = Teen;
+     }else if(ageDelta > 300 && c->currentAge == Teen){
+       c->currentAge = Adult;
      }
      return c;
    }
