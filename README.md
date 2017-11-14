@@ -36,11 +36,11 @@ and just enjoy having her arround.
 
 ## Screenshots
 
-![screenshot](assets/screen-1.png "Screenshots")
+![screenshot](https://raw.githubusercontent.com/eisenwinter/pebble-ava/master/assets/screen-1.PNG "Screenshots")
 
-![screenshot](assets/screen-2.png "Screenshots")
+![screenshot](https://raw.githubusercontent.com/eisenwinter/pebble-ava/master/assets/screen-2.PNG "Screenshots")
 
-![screenshot](assets/screen-3.png "Screenshots")
+![screenshot](https://raw.githubusercontent.com/eisenwinter/pebble-ava/master/assets/screen-3.PNG "Screenshots")
 
 ## How to build from source
 
