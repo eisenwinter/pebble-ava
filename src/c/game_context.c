@@ -33,6 +33,13 @@ static void heartbeat_tick(void *data) {
     } else {
         //death message
         _death_callback();
+        if(persist_exists(101)) {
+             for(int i = 101; i <= 108; i++) {
+                 persist_delete(i);
+             }
+             persist_delete(50);
+             persist_delete(60);
+         }
     }
 }
 
@@ -59,7 +66,7 @@ static void try_store_creature() {
         persist_write_int(60,get_creature_current_position(_creature)->y);
     } else {
         if(persist_exists(101)) {
-            for(int i = 101; i <= 107; i++) {
+            for(int i = 101; i <= 108; i++) {
                 persist_delete(i);
             }
             persist_delete(50);

@@ -133,7 +133,7 @@ static void render(Layer *layer, GContext *ctx) {
  */
 static void statusbar_update_proc(Layer *layer, GContext *ctx) {
     GRect bounds = layer_get_bounds(layer);
-    graphics_context_set_fill_color(ctx, GColorVividCerulean);
+    graphics_context_set_fill_color(ctx,PBL_IF_COLOR_ELSE(GColorVividCerulean, GColorWhite));
     graphics_fill_rect(ctx, bounds, 0, GCornerNone);
 
     graphics_context_set_compositing_mode(ctx, GCompOpSet);
@@ -144,13 +144,12 @@ static void statusbar_update_proc(Layer *layer, GContext *ctx) {
     graphics_draw_rect(ctx, GRect(4,14,102,7));
     graphics_draw_rect(ctx, GRect(4,24,102,7));
 
-    graphics_context_set_fill_color(ctx, GColorOrange);
+    graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(GColorOrange, GColorBlack));
 
     int foodPercs = status_percentage(Hunger,_current_creature);
     GRect foodBar = GRect(5,5,foodPercs,5);
     graphics_fill_rect(ctx,foodBar,0,GCornerNone);
 
-    graphics_context_set_fill_color(ctx, GColorOrange);
     int hapPercs = status_percentage(Hapiness,_current_creature);
     GRect hapinessBar = GRect(5,15,hapPercs,5);
     graphics_fill_rect(ctx,hapinessBar,0,GCornerNone);
@@ -159,7 +158,7 @@ static void statusbar_update_proc(Layer *layer, GContext *ctx) {
     GRect restedBar = GRect(5,25,restedPercs,5);
     graphics_fill_rect(ctx,restedBar,0,GCornerNone);
 
-    graphics_context_set_fill_color(ctx, GColorCobaltBlue);
+    graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(GColorCobaltBlue,GColorBlack));
     graphics_draw_line(ctx, GPoint(0,bounds.size.h-1), GPoint(bounds.size.w,bounds.size.h-1));
 }
 

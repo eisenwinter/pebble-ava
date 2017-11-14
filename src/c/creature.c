@@ -186,6 +186,7 @@ Creature* restore_saved_creature(int hbFrequency) {
         c->currentAge = persist_read_int(105);
         c->asleep = persist_read_bool(106);
         persist_read_data(107, &c->born,sizeof(time_t));
+        persist_read_data(108, &c->last_save,sizeof(time_t));
         int hbsSecs = hbFrequency / 1000;
         //time passes slower when no on screen
         int delta = ((time(0) - c->last_save) / hbsSecs) / 10;
