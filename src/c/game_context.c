@@ -54,19 +54,25 @@ void command_play(){
   if(play(_creature)){
     _movement_counter = 0;
     creature_is_playing(_creature, _defaultCb);
+  }else{
+    creature_denying(_defaultCb);
   }
 }
 void command_feed(){
   if(feed(_creature)){
     _movement_counter = 0;
-    //missing animation
+    creature_is_eating(_defaultCb);
+  }else{
+    creature_denying(_defaultCb);
   }
 }
 void command_put_to_sleep(){
   if((put_to_sleep(_creature))){
     _movement_counter = 0;
     creature_falling_alseep(_defaultCb);
-  } //might wanna add a deny animation
+  }else{
+    creature_denying(_defaultCb);
+  }
   
 }
 

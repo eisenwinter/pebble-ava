@@ -91,3 +91,5 @@ typedef void animationCallback(SpriteAnimation animation, EntityPosition pos, in
  
 void creature_idle_animation(Creature *c, animationCallback *cb);
 EntityPosition* get_creature_current_position(Creature *c);
+void creature_is_eating(animationCallback *cb);
+void creature_denying(animationCallback *cb);

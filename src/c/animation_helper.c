@@ -84,6 +84,25 @@ void creature_is_playing(Creature *c, animationCallback *cb){
         },1,24);       
 }
 
+void creature_is_eating(animationCallback *cb){
+     cb((SpriteAnimation){
+        .row = 9,
+        .startFrame = 0,
+        .endFrame = 3
+     },(EntityPosition){
+        .set = false
+    },5,0);
+}
+
+void creature_denying(animationCallback *cb){
+     cb((SpriteAnimation){
+        .row = 10,
+        .startFrame = 0,
+        .endFrame = 3
+     },(EntityPosition){
+        .set = false
+    },3,0);
+}
 
 void creature_is_sleepy(animationCallback *cb){
      cb((SpriteAnimation){
