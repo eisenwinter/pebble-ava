@@ -115,6 +115,9 @@ static void render(Layer *layer, GContext *ctx) {
     } else {
         if(_idle_animation == NULL) {
             _idle_animation = creature_idle_animation(_current_creature);
+            if(current_fps != DEFAULT_FPS) { //restore default fps
+               current_fps = DEFAULT_FPS;
+            }
         }
 
         GBitmap *frame = get_sprite_frame(_idle_animation->animation.row,_idle_animation->current_frame);
