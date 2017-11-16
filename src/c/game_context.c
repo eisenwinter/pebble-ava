@@ -124,6 +124,7 @@ void dispose_game_ctx() {
     try_store_creature();
     remove_creature(_creature,_default_callback);
     dispose_creature(_creature);
+    _creature = NULL;
 }
 
 Creature* get_creature_from_ctx() {
